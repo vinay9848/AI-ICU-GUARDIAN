@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Dashboard from './pages/Dashboard';
 import PatientDetail from './pages/PatientDetail';
+import { DemoProvider } from './context/DemoContext';
 import { usePatients } from './hooks/usePatients';
 import { useVoiceAlerts } from './hooks/useVoiceAlerts';
 
@@ -27,7 +28,9 @@ function AppContent() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <DemoProvider>
+        <AppContent />
+      </DemoProvider>
     </BrowserRouter>
   );
 }

@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useDarkMode } from '../../hooks/useDarkMode';
+import { useDemo } from '../../context/DemoContext';
 
 export default function Header() {
   const [dark, setDark] = useDarkMode();
+  const { demo, toggle } = useDemo();
 
   return (
     <header className="bg-medical-blue dark:bg-gray-900 text-white px-4 sm:px-6 py-3 sm:py-4 shadow-lg transition-colors">
@@ -21,6 +23,20 @@ export default function Header() {
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
             <span className="text-xs sm:text-sm font-medium">Live</span>
           </div>
+
+          {/* Demo mode toggle */}
+          <button
+            onClick={toggle}
+            className={`flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm font-medium transition-colors ${
+              demo ? 'bg-amber-500 text-white' : 'bg-white/10 hover:bg-white/20'
+            }`}
+            title={demo ? 'Switch to live data' : 'Switch to demo mode'}
+          >
+            <div className={`w-8 h-4 rounded-full relative transition-colors ${demo ? 'bg-amber-300' : 'bg-white/30'}`}>
+              <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${demo ? 'translate-x-4' : 'translate-x-0.5'}`} />
+            </div>
+            {demo ? 'Demo' : 'Live'}
+          </button>
 
           {/* Dark mode toggle */}
           <button
