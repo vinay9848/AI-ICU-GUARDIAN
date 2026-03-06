@@ -8,14 +8,14 @@ export function useVitals(patientId, hours = 48, refreshInterval = 60000) {
   const fetchData = useCallback(async () => {
     if (!patientId) return;
     try {
-      const res = await getVitals(patientId, hours);
+      const res = await getVitals(patientId, 48);
       setVitals(res.data);
     } catch (err) {
       console.error('Failed to fetch vitals:', err);
     } finally {
       setLoading(false);
     }
-  }, [patientId, hours]);
+  }, [patientId]);
 
   useEffect(() => {
     fetchData();

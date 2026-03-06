@@ -50,7 +50,27 @@ export default function PatientDetail() {
     );
   }
 
-  const readings = vitals?.readings || [];
+  const allReadings = vitals?.readings || [];
+
+  // Filter readings by selected time range on the frontend
+  const readings = (() => {
+    if (allReadings.length === 0) return [];
+    const lastTs = allReadings.reduce((max, r) => {
+      const t = new Date(r.timestamp).getTime();
+      return t > max ? t : max;
+    }, 0);
+    if (!lastTs) return allReadings;
+    const cutoff = lastTs - timeRange * 60 * 60 * 1000;
+    const filtered = allReadings.filter(r => new Date(r.timestamp).getTime() >= cutoff);
+    // If filtering leaves nothing (timestamps too close), show proportional slice
+    if (filtered.length === allReadings.length || filtered.length === 0) {
+      const fraction = timeRange / 48;
+      const count = Math.max(1, Math.round(allReadings.length * fraction));
+      return allReadings.slice(-count);
+    }
+    return filtered;
+  })();
+
   const lastReading = readings.length > 0 ? readings[readings.length - 1] : null;
 
   return (
