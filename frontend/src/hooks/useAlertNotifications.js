@@ -3,6 +3,13 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 const CONTACTS_KEY = 'alertContacts';
 const HISTORY_KEY = 'alertHistory';
 
+const DEFAULT_CONTACT = {
+  name: 'Vinay',
+  role: 'doctor',
+  phone: '966359835',
+  email: 'vinaykumarpersonal99@gmail.com',
+};
+
 function loadJSON(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) || fallback; }
   catch { return fallback; }
@@ -28,6 +35,25 @@ export function useAlertNotifications(patients) {
       }
     }
   }, []);
+
+  // Auto-register default contact for all patients on first load
+  useEffect(() => {
+    if (!patients || patients.length === 0) return;
+    setContacts(prev => {
+      let updated = { ...prev };
+      let changed = false;
+      for (const p of patients) {
+        const pid = p.patient_id;
+        const list = updated[pid] || [];
+        const hasDefault = list.some(c => c.email === DEFAULT_CONTACT.email);
+        if (!hasDefault) {
+          updated[pid] = [...list, { ...DEFAULT_CONTACT, id: Date.now() + pid }];
+          changed = true;
+        }
+      }
+      return changed ? updated : prev;
+    });
+  }, [patients]);
 
   // Save contacts when changed
   useEffect(() => { saveJSON(CONTACTS_KEY, contacts); }, [contacts]);

@@ -46,12 +46,13 @@ export default function AlertsCenter() {
   const handleAddContact = async () => {
     if (!selectedPatient || !contactForm.name) return;
     const pid = parseInt(selectedPatient);
+    // Always save locally first, then try backend
+    notifs.addContact(pid, contactForm);
+    setContactForm({ name: '', role: 'family', phone: '', email: '' });
     try {
       await apiAddContact(pid, contactForm);
-      notifs.addContact(pid, contactForm);
-      setContactForm({ name: '', role: 'family', phone: '', email: '' });
     } catch (e) {
-      console.error('Failed to add contact:', e);
+      console.error('Backend contact save failed (saved locally):', e);
     }
   };
 
