@@ -19,23 +19,19 @@ export default function Header() {
           </div>
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-white/10 rounded-full px-2.5 sm:px-4 py-1 sm:py-1.5">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-xs sm:text-sm font-medium">Live</span>
-          </div>
-
           {/* Demo mode toggle */}
           <button
             onClick={toggle}
-            className={`flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition-colors ${
               demo ? 'bg-amber-500 text-white' : 'bg-white/10 hover:bg-white/20'
             }`}
             title={demo ? 'Switch to live data' : 'Switch to demo mode'}
           >
-            <div className={`w-8 h-4 rounded-full relative transition-colors ${demo ? 'bg-amber-300' : 'bg-white/30'}`}>
-              <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${demo ? 'translate-x-4' : 'translate-x-0.5'}`} />
+            <div className={`w-10 h-5 rounded-full relative transition-colors ${demo ? 'bg-amber-300' : 'bg-white/30'}`}>
+              <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${demo ? 'translate-x-5' : 'translate-x-0'}`} />
             </div>
-            {demo ? 'Demo' : 'Live'}
+            <span>{demo ? 'Demo' : 'Live'}</span>
+            {!demo && <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />}
           </button>
 
           {/* Dark mode toggle */}
