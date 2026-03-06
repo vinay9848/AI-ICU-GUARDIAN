@@ -165,7 +165,7 @@ export default function PatientDetail() {
           {/* Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {VITAL_KEYS.map(key => (
-              <VitalChart key={key} vitalKey={key} readings={readings} />
+              <VitalChart key={`${key}-${timeRange}`} vitalKey={key} readings={readings} />
             ))}
           </div>
 
