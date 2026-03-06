@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { sendCriticalAlert, sendStatusUpdate } from '../services/emailAlert';
 
 const CONTACTS_KEY = 'alertContacts';
 const HISTORY_KEY = 'alertHistory';
@@ -134,13 +135,33 @@ export function useAlertNotifications(patients) {
         };
         addAlert(alert);
 
-        // Log individual contact notifications
+        // Send real email + log for each contact
+        const vitals = p.last_vitals;
+        let vitalDetail = '';
+        if (vitals) {
+          if (vitals.spo2 !== null && vitals.spo2 < 90) vitalDetail = `SpO2 dropped to ${vitals.spo2}%`;
+          else if (vitals.heart_rate !== null && (vitals.heart_rate > 130 || vitals.heart_rate < 40))
+            vitalDetail = `Heart rate at ${vitals.heart_rate} BPM`;
+          else if (vitals.respiration_rate !== null && vitals.respiration_rate > 30)
+            vitalDetail = `Respiration rate at ${vitals.respiration_rate}`;
+        }
+
         patientContacts.forEach(c => {
+          // Send real email if contact has email
+          if (c.email) {
+            sendCriticalAlert({
+              patientName: name,
+              patientId: id,
+              vitalDetails: vitalDetail || 'Vital signs exceeded critical thresholds',
+              contactName: c.name,
+              contactEmail: c.email,
+            });
+          }
           addAlert({
             patientId: id,
             patientName: name,
             type: 'notification_sent',
-            message: `Alert sent to ${c.name} (${c.role}) at ${c.phone || c.email}`,
+            message: `Email alert sent to ${c.name} (${c.role}) at ${c.email || c.phone}`,
             notifiedContacts: [c.name],
           });
         });
@@ -153,12 +174,27 @@ export function useAlertNotifications(patients) {
           `${name} is now ${newStatus}.`,
           `improved-${id}`
         );
+
+        // Send improvement email to contacts
+        const patientContacts = contacts[id] || [];
+        patientContacts.forEach(c => {
+          if (c.email) {
+            sendStatusUpdate({
+              patientName: name,
+              patientId: id,
+              newStatus,
+              contactName: c.name,
+              contactEmail: c.email,
+            });
+          }
+        });
+
         addAlert({
           patientId: id,
           patientName: name,
           type: 'improved',
           message: `${name} improved to ${newStatus}`,
-          notifiedContacts: [],
+          notifiedContacts: patientContacts.map(c => c.name),
         });
       }
 
