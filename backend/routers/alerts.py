@@ -1,6 +1,9 @@
+import asyncio
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
+
+from backend.services.email_service import send_critical_alert, send_status_update
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
@@ -71,3 +74,56 @@ async def trigger_alert(req: AlertTrigger):
 @router.get("/history")
 async def get_history(limit: int = 50):
     return alert_service.get_alert_history(limit)
+
+
+class EmailAlert(BaseModel):
+    patient_name: str
+    patient_id: int
+    vital_details: str = "Vital signs exceeded critical thresholds"
+    contact_name: str
+    contact_email: str
+    dashboard_url: str = ""
+
+
+@router.post("/send-email")
+async def send_email_alert(req: EmailAlert):
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(
+        None,
+        lambda: send_critical_alert(
+            req.patient_name, req.patient_id, req.vital_details,
+            req.contact_name, req.contact_email, req.dashboard_url,
+        )
+    )
+    if result:
+        alert_service.trigger_alert(
+            req.patient_id, "email_sent",
+            f"Email sent to {req.contact_name} at {req.contact_email}",
+            req.patient_name,
+        )
+        return {"status": "sent", "to": req.contact_email}
+    raise HTTPException(status_code=500, detail="Email send failed")
+
+
+class StatusUpdateEmail(BaseModel):
+    patient_name: str
+    patient_id: int
+    new_status: str
+    contact_name: str
+    contact_email: str
+    dashboard_url: str = ""
+
+
+@router.post("/send-status-email")
+async def send_status_email(req: StatusUpdateEmail):
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(
+        None,
+        lambda: send_status_update(
+            req.patient_name, req.patient_id, req.new_status,
+            req.contact_name, req.contact_email, req.dashboard_url,
+        )
+    )
+    if result:
+        return {"status": "sent", "to": req.contact_email}
+    raise HTTPException(status_code=500, detail="Email send failed")
