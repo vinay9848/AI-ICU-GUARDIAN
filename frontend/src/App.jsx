@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Dashboard from './pages/Dashboard';
 import PatientDetail from './pages/PatientDetail';
+import AlertsCenter from './pages/AlertsCenter';
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/patients/:id" element={<PatientDetail />} />
+            <Route path="/alerts" element={<AlertsCenter />} />
           </Routes>
         </main>
       </div>
