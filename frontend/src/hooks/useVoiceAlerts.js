@@ -1,47 +1,38 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-
-const VOICE_KEY = 'voiceAlertsEnabled';
+import { useEffect, useRef } from 'react';
 
 export function useVoiceAlerts(patients) {
-  const [enabled, setEnabled] = useState(() => localStorage.getItem(VOICE_KEY) === 'true');
   const prevStatuses = useRef({});
   const queue = useRef([]);
   const speaking = useRef(false);
 
   useEffect(() => {
-    localStorage.setItem(VOICE_KEY, enabled);
-  }, [enabled]);
-
-  const speak = useCallback((text) => {
+    if (!patients || patients.length === 0) return;
     if (!('speechSynthesis' in window)) return;
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9;
-    utterance.pitch = 1.1;
-    utterance.volume = 1;
-    utterance.onend = () => {
-      speaking.current = false;
-      processQueue();
+
+    const speak = (text) => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1.1;
+      utterance.volume = 1;
+      utterance.onend = () => {
+        speaking.current = false;
+        if (queue.current.length > 0) {
+          speak(queue.current.shift());
+        }
+      };
+      speaking.current = true;
+      window.speechSynthesis.speak(utterance);
     };
-    speaking.current = true;
-    window.speechSynthesis.speak(utterance);
-  }, []);
 
-  const processQueue = useCallback(() => {
-    if (speaking.current || queue.current.length === 0) return;
-    const next = queue.current.shift();
-    speak(next);
-  }, [speak]);
-
-  const enqueue = useCallback((text) => {
-    queue.current.push(text);
-    processQueue();
-  }, [processQueue]);
-
-  useEffect(() => {
-    if (!enabled || !patients || patients.length === 0) return;
+    const enqueue = (text) => {
+      if (speaking.current) {
+        queue.current.push(text);
+      } else {
+        speak(text);
+      }
+    };
 
     const prev = prevStatuses.current;
-    const alerts = [];
 
     for (const p of patients) {
       const id = p.patient_id;
@@ -63,25 +54,15 @@ export function useVoiceAlerts(patients) {
             detail = `Blood pressure systolic at ${vitals.bp_systolic}`;
         }
 
-        const msg = `Alert! ${name} is now critical.${detail ? ' ' + detail + '.' : ''} Immediate attention required.`;
-        alerts.push(msg);
+        enqueue(`Alert! ${name} is now critical.${detail ? ' ' + detail + '.' : ''} Immediate attention required.`);
       }
 
       if (oldStatus === 'critical' && newStatus !== 'critical') {
         const name = p.name || `Patient ${id}`;
-        alerts.push(`${name} status improved to ${newStatus}.`);
+        enqueue(`${name} status improved to ${newStatus}.`);
       }
 
       prev[id] = newStatus;
     }
-
-    alerts.forEach(a => enqueue(a));
-  }, [patients, enabled, enqueue]);
-
-  const toggle = useCallback(() => setEnabled(e => !e), []);
-  const testVoice = useCallback(() => {
-    speak('Voice alerts are active. You will be notified when a patient becomes critical.');
-  }, [speak]);
-
-  return { enabled, toggle, testVoice };
+  }, [patients]);
 }
