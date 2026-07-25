@@ -1,5 +1,9 @@
 # AI ICU Guardian — Patient Monitoring System
 
+**Live demo:** [ai-icu-guardian.vercel.app](https://ai-icu-guardian.vercel.app) · Backend API: [ai-icu-guardian-api.onrender.com](https://ai-icu-guardian-api.onrender.com)
+
+> Hosted on free tiers (Vercel + Render). The backend may take 30–60s to wake up on first load if idle — a GitHub Actions job pings it every 14 minutes to keep it warm.
+
 AI-powered ICU patient monitoring dashboard with real-time vital signs visualization,
 risk analysis, and predictive insights. Built on MIMIC-IV clinical demo data.
 
